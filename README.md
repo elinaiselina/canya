@@ -16,7 +16,45 @@ CANYA can then be installed via pip:
 python -m pip install --no-cache-dir https://github.com/lehner-lab/canya/tarball/master
 ```
 
-### Running CANYA
+### Fitness regression in Python
+
+On this branch, `create_model()` defaults to continuous fitness regression.
+It preserves the original one-hot sequence, CNN, attention, and dense layers,
+but uses a linear scalar output, mean squared error loss, and MAE/RMSE metrics.
+Predictions can therefore be negative or positive.
+
+```python
+import numpy as np
+from canya.modeling import create_model, get_embedded_seqs
+
+# train_df and validation_df are separate, prepared data splits.
+model = create_model(task="regression")
+x_train = get_embedded_seqs(train_df["aa_seq"].tolist())
+y_train = train_df["fitness_mean"].to_numpy(dtype=np.float32).reshape(-1, 1)
+x_validation = get_embedded_seqs(validation_df["aa_seq"].tolist())
+y_validation = validation_df["fitness_mean"].to_numpy(dtype=np.float32).reshape(-1, 1)
+
+model.fit(
+    x_train,
+    y_train,
+    validation_data=(x_validation, y_validation),
+    batch_size=128,
+    epochs=50,
+)
+metrics = model.evaluate(x_validation, y_validation, return_dict=True)
+```
+
+Use `fitness_mean` for the initial absolute assay-fitness baseline. When
+evaluating unseen reference backgrounds, split by `sublibrary` before preparing
+these arrays so variants of a reference stay in the same split. This model
+requires training on continuous targets; the released classifier weights are
+not trained fitness-regression weights.
+
+To build the original classifier, use `create_model(task="classification")`.
+`get_canya()` and the command-line interface continue to load the original
+pretrained classifier and return aggregation scores.
+
+### Pretrained aggregation predictions
 
 Once installed, CANYA can be run very simply with the following options:
 

@@ -1,0 +1,16 @@
+{
+  "seed": 42,
+  "epochs": 50,
+  "batch_size": 128,
+  "learning_rate": 0.0005,
+  "target": "fitness_mean",
+  "initialisation": "pretrained_encoder_fresh_head",
+  "pretrained_weights": "models/model_weights1.h5",
+  "trainable_layers": "all",
+  "task": "regression",
+  "stop_codon_policy": "truncate_before_first_stop",
+  "train_path": "/Users/ej10/Desktop/ESM_CANYA/canya/data/splits/train_sequences.csv",
+  "test_path": "/Users/ej10/Desktop/ESM_CANYA/canya/data/splits/test_sequences.csv",
+  "n_train": 9702,
+  "n_test": 4115
+}

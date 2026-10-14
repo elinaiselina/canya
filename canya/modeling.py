@@ -231,8 +231,17 @@ def create_model(
     l2_regularization=0.01,
     pool_size="no",
     batch_size=256,
-    act_reg=0
+    act_reg=0,
+    task="regression"
 ):
+    """Build CANYA for continuous fitness regression or binary classification.
+
+    Regression uses an unrestricted scalar output and mean squared error.
+    Classification retains the original sigmoid output and binary KL loss.
+    Both tasks use the same sequence encoder and return a compiled model.
+    """
+    if task not in ("regression", "classification"):
+        raise ValueError("task must be 'regression' or 'classification'")
 ########################
     ## Define model logic ##
     ########################
@@ -292,19 +301,44 @@ def create_model(
     dense=Activation("relu",name="dense_activation")(dense)
     dense=Dropout(dropout_rate,name="dense_dropout")(dense)
     
-    out=Dense(1,activation="sigmoid",name="output_activation")(dense)
+    output_activation = "linear" if task == "regression" else "sigmoid"
+    out=Dense(1,activation=output_activation,name="output_activation")(dense)
     # create model
     model = Model(inputs=seq_input, outputs=out)
-    model.compile(optimizer="adam", loss=binary_KL)
-    # model.compile(optimizer="adam", loss="bce")
+    if task == "regression":
+        model.compile(
+            optimizer="adam",
+            loss="mean_squared_error",
+            metrics=[
+                keras.metrics.MeanAbsoluteError(name="mae"),
+                keras.metrics.RootMeanSquaredError(name="rmse"),
+            ],
+        )
+    else:
+        model.compile(optimizer="adam", loss=binary_KL)
     
     return model
 
 def get_canya(modweights="models/model_weights1.h5"):
-    canyamodel=create_model()
+    # Released weights were trained for binary aggregation classification.
+    canyamodel=create_model(task="classification")
     canyamodel.load_weights(resource_filename(__name__,modweights))
     print("Loaded model " + modweights)
     return canyamodel
+
+def get_canya_regressor(modweights="models/model_weights1.h5"):
+    classifier = get_canya(modweights)
+    regressor = create_model(task="regression")
+
+    # Both models have the same layer order and encoder architecture.
+    for source, target in zip(classifier.layers, regressor.layers):
+        if target.name == "output_activation":
+            continue
+
+        target.set_weights(source.get_weights())
+
+    return regressor
+
 
 def get_embedded_seqs(sequences):
     embeddedseqs=[tf.pad(seq_to_vector(x),paddings,"CONSTANT") for x in sequences]
@@ -315,13 +349,3 @@ def get_embedded_seqs(sequences):
 def get_predictions(model,embeddedseqs):
     curpredictions=model.predict(embeddedseqs)
     return curpredictions.flatten().tolist()
-    
-
-
-
-
-
-
-
-
-    

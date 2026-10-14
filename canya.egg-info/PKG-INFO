@@ -1,13 +1,9 @@
-Metadata-Version: 1.2
+Metadata-Version: 2.4
 Name: canya
 Version: 0.0.3
 Summary: CANYA a hybrid neural-network to predict nucleation propensities
-Home-page: UNKNOWN
 Author: Mike Thompson
 Author-email: mjthompson at ucla dot edu
-License: UNKNOWN
-Description: UNKNOWN
-Platform: UNKNOWN
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.6
@@ -16,3 +12,16 @@ Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3 :: Only
 Requires-Python: >=3.6, <4
+License-File: LICENSE
+Requires-Dist: numpy==1.19.5
+Requires-Dist: pandas<=1.3.3
+Requires-Dist: tensorflow==2.6.0
+Requires-Dist: keras==2.6.0
+Requires-Dist: protobuf<=3.20
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
